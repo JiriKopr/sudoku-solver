@@ -2,27 +2,33 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	. "sudoku/node"
 )
 
 func main() {
-	testValues := []string{}
+	input := []int{
+		0, 0, 0, 0, 5, 0, 9, 2, 0,
+		1, 0, 0, 0, 4, 2, 7, 6, 3,
+		9, 0, 2, 0, 0, 7, 0, 0, 5,
 
-	for i := 0; i < 81; i++ {
-		testValues = append(testValues, fmt.Sprintf("%d", i))
+		0, 0, 0, 0, 0, 3, 1, 5, 7,
+		0, 5, 0, 6, 0, 9, 0, 8, 0,
+		0, 0, 0, 5, 7, 0, 0, 0, 0,
+
+		5, 0, 0, 0, 9, 8, 6, 0, 2,
+		0, 2, 7, 3, 0, 1, 0, 0, 9,
+		0, 4, 9, 7, 0, 0, 8, 3, 0,
 	}
 
-	current := CreateSudokuFromString(strings.Join(testValues, ";"))
+	current := CreateSudoku(input)
 
-	for first := current; current != nil; first = first.Neighbourhood.Bottom {
-		for ; current != nil; current = current.Neighbourhood.Right {
-			fmt.Print(current.Value)
-		}
+	current.PrintBoard()
 
-        fmt.Print("\n")
+	current.Solve()
 
-		current = first.Neighbourhood.Bottom
+	current.PrintBoard()
+
+	for start := current; start != nil; start = start.Neighbourhood.Right {
+		fmt.Printf("%d: %v \n", start.Value, start.TakenValues)
 	}
-
 }
