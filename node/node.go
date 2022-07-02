@@ -27,10 +27,20 @@ func (group Group) String() string {
 	return strings.Join(stringValues, ",")
 }
 
+type Row struct {
+	Nodes []*Node
+}
+
+type Column struct {
+	Nodes []*Node
+}
+
 type Node struct {
 	Value         int
 	Neighbourhood *Neighbourhood
 	Group         *Group
+	Row           *Row
+	Column        *Column
 	TakenValues   *Set
 }
 
@@ -45,14 +55,14 @@ func (node Node) PrintBoard() {
 	fmt.Printf("\n")
 	for start := &node; start != nil; start = start.Neighbourhood.Bottom {
 		for current := start; current != nil; current = current.Neighbourhood.Right {
-			fmt.Printf(" %2d ", len(current.Group.Nodes))
-			// value := current.Value
-			// if value == 0 {
-			// 	fmt.Printf(" __ ")
-			// 	continue
-			// }
+			// fmt.Printf(" %2d ", len(current.Group.Nodes))
+			value := current.Value
+			if value == 0 {
+				fmt.Printf(" __ ")
+				continue
+			}
 
-			// fmt.Printf(" %2d ", value)
+			fmt.Printf(" %2d ", value)
 		}
 
 		fmt.Printf("\n")
@@ -74,6 +84,16 @@ func (node *Node) AddToGroup(group *Group) {
 	group.Nodes = append(group.Nodes, node)
 }
 
+func (node *Node) AddToRow(row *Row) {
+	node.Row = row
+	row.Nodes = append(row.Nodes, node)
+}
+
+func (node *Node) AddToColumn(column *Column) {
+	node.Column = column
+	column.Nodes = append(column.Nodes, node)
+}
+
 func CreateSudoku(input []int) *Node {
 	head := NewNode()
 
@@ -88,11 +108,17 @@ func CreateSudoku(input []int) *Node {
 		if previous != nil {
 			current.Neighbourhood.Left = previous
 			previous.Neighbourhood.Right = current
+			current.AddToRow(previous.Row)
+		} else {
+			current.AddToRow(&Row{Nodes: []*Node{}})
 		}
 
 		if top != nil {
 			current.Neighbourhood.Top = top
 			top.Neighbourhood.Bottom = current
+			current.AddToColumn(top.Column)
+		} else {
+			current.AddToColumn(&Column{Nodes: []*Node{}})
 		}
 
 		// 0    3    6
@@ -102,7 +128,7 @@ func CreateSudoku(input []int) *Node {
 		// 54   57   60
 
 		if index%3 == 0 {
-			if index%27 == 0 || (index-3)%27 == 0 || (index-6)%27 == 0 || top == nil {
+			if (len(current.Column.Nodes) - 1)%3 == 0 || top == nil {
 				current.Group = &Group{Nodes: []*Node{current}}
 			} else {
 				current.AddToGroup(top.Group)
@@ -111,26 +137,11 @@ func CreateSudoku(input []int) *Node {
 			current.AddToGroup(previous.Group)
 		}
 
-		// if index%3 == 0 {
-		// 	if index%27 == 0 || top == nil {
-		// 		current.Group = &Group{Nodes: []*Node{current}}
-		// 	} else {
-		// 		top.Group.Nodes = append(top.Group.Nodes, current)
-		// 		current.Group = top.Group
-		// 	}
-		// } else {
-		// 	if previous != nil {
-		// 		previous.Group.Nodes = append(previous.Group.Nodes, current)
-		// 		current.Group = previous.Group
-		// 	}
-		// }
-
 		if (index+1)%9 == 0 && index != 0 {
 			// New row
 			previous = nil
 
-			for top = current; top.Neighbourhood.Left != nil; top = top.Neighbourhood.Left {
-			}
+			top = current.Row.Nodes[0]
 		} else {
 			previous = current
 
@@ -197,23 +208,7 @@ func (node *Node) TakeOutValueInOthers(value int) {
 }
 
 func (node *Node) Solve() {
-	// for start := node; start != nil; start = start.Neighbourhood.Bottom {
-	// 	for current := start; current != nil; current = current.Neighbourhood.Right {
-	// 		value := current.Value
-	// 		if value == 0 {
-	// 			continue
-	// 		}
-
-	// 		current.TakeOutValueInOthers(value)
-	// 	}
-	// }
-
-	row := 0
 	for start := node; start != nil; start = start.Neighbourhood.Bottom {
-		if row == 6 {
-			return
-		}
-
 		for current := start; current != nil; current = current.Neighbourhood.Right {
 			value := current.Value
 			if value == 0 {
@@ -222,11 +217,28 @@ func (node *Node) Solve() {
 
 			current.TakeOutValueInOthers(value)
 		}
-
-		row++
 	}
 
-	// node.SolveForState()
+	node.SolveForState()
+
+	// row := 0
+	// for start := node; start != nil; start = start.Neighbourhood.Bottom {
+	// 	if row == 9 {
+	// 		return
+	// 	}
+
+	// 	for current := start; current != nil; current = current.Neighbourhood.Right {
+	// 		value := current.Value
+	// 		if value == 0 {
+	// 			continue
+	// 		}
+
+	// 		current.TakeOutValueInOthers(value)
+	// 	}
+
+	// 	row++
+	// }
+
 }
 
 func (node *Node) SolveForState() {
