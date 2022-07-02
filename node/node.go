@@ -55,7 +55,6 @@ func (node Node) PrintBoard() {
 	fmt.Printf("\n")
 	for start := &node; start != nil; start = start.Neighbourhood.Bottom {
 		for current := start; current != nil; current = current.Neighbourhood.Right {
-			// fmt.Printf(" %2d ", len(current.Group.Nodes))
 			value := current.Value
 			if value == 0 {
 				fmt.Printf(" __ ")
@@ -121,14 +120,8 @@ func CreateSudoku(input []int) *Node {
 			current.AddToColumn(&Column{Nodes: []*Node{}})
 		}
 
-		// 0    3    6
-
-		// 27   30   33
-
-		// 54   57   60
-
 		if index%3 == 0 {
-			if (len(current.Column.Nodes) - 1)%3 == 0 || top == nil {
+			if (len(current.Column.Nodes)-1)%3 == 0 || top == nil {
 				current.Group = &Group{Nodes: []*Node{current}}
 			} else {
 				current.AddToGroup(top.Group)
@@ -220,25 +213,6 @@ func (node *Node) Solve() {
 	}
 
 	node.SolveForState()
-
-	// row := 0
-	// for start := node; start != nil; start = start.Neighbourhood.Bottom {
-	// 	if row == 9 {
-	// 		return
-	// 	}
-
-	// 	for current := start; current != nil; current = current.Neighbourhood.Right {
-	// 		value := current.Value
-	// 		if value == 0 {
-	// 			continue
-	// 		}
-
-	// 		current.TakeOutValueInOthers(value)
-	// 	}
-
-	// 	row++
-	// }
-
 }
 
 func (node *Node) SolveForState() {

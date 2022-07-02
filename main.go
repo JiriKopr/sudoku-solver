@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	. "sudoku/node"
 )
 
@@ -27,8 +26,4 @@ func main() {
 	current.Solve()
 
 	current.PrintBoard()
-
-	for start := current; start != nil; start = start.Neighbourhood.Right {
-		fmt.Printf("%d: %v \n", start.Value, start.TakenValues)
-	}
 }
